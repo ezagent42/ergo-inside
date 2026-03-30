@@ -600,10 +600,10 @@ accounts:
     # see the manual for details on how to write an authentication plugin script
     auth-script:
         enabled: true
-        command: "/Users/h2oslabs/.config/ergo/ergo_auth_script.py"
+        command: "/opt/homebrew/Cellar/zchat/0.3.0/libexec/bin/python"
         # constant list of args to pass to the command; the actual authentication
         # data is transmitted over stdin/stdout:
-        args: []
+        args: ["/Users/h2oslabs/.config/ergo/ergo_auth_script.py"]
         # should we automatically create users if the plugin returns success?
         autocreate: true
         # timeout for process execution, after which we send a SIGTERM:

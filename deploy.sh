@@ -16,8 +16,8 @@ cp "$SCRIPT_DIR/ergo_auth_script.py" "$ERGO_DIR/ergo_auth_script.py"
 cp "$SCRIPT_DIR/auth_script_config.json" "$ERGO_DIR/auth_script_config.json"
 chmod +x "$ERGO_DIR/ergo_auth_script.py"
 
-# Install httpx for the auth-script (uses system python3)
-python3 -m pip install --quiet httpx 2>/dev/null || echo "Warning: could not install httpx"
+# Auth-script uses the zchat Homebrew venv Python (has httpx installed)
+# See ergo.yaml auth-script.command for the Python path
 
 # Caddy config
 cp "$SCRIPT_DIR/Caddyfile" "$CADDY_DIR/Caddyfile"
