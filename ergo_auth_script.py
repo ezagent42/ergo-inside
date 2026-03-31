@@ -11,13 +11,15 @@ Config via env:
 """
 import json
 import os
+import re
 import sys
 
 import httpx
 
-# Inline the separator constant to avoid zchat_protocol dependency at runtime
+# Inline constants to avoid zchat_protocol/zchat.cli dependency at runtime
 # (ergo spawns this script as a subprocess — zchat venv may not be available)
 AGENT_SEPARATOR = "-"
+_IRC_NICK_RE = re.compile(r"[^A-Za-z0-9\-_\\\[\]\{\}\^|]")
 
 
 def validate_credentials(
@@ -43,8 +45,18 @@ def validate_credentials(
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-    # Logto uses "username", Keycloak uses "preferred_username"
-    preferred_username = userinfo.get("username") or userinfo.get("preferred_username", "")
+    # Extract username with fallback: username → preferred_username → email → sub
+    # Then sanitize to match IRC nick rules (same logic as auth._sanitize_irc_nick)
+    preferred_username = ""
+    for field in ("username", "preferred_username"):
+        val = userinfo.get(field)
+        if val:
+            preferred_username = val
+            break
+    if not preferred_username:
+        email = userinfo.get("email", "")
+        preferred_username = email.split("@")[0] if email else userinfo.get("sub", "")
+    preferred_username = _IRC_NICK_RE.sub("", preferred_username).lstrip("0123456789-") or "user"
 
     # For agents (e.g., "alice-agent0"), check that the owner matches
     if AGENT_SEPARATOR in account_name:

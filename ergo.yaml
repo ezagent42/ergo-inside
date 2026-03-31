@@ -600,7 +600,7 @@ accounts:
     # see the manual for details on how to write an authentication plugin script
     auth-script:
         enabled: true
-        command: "/opt/homebrew/Cellar/zchat/0.3.0/libexec/bin/python"
+        command: "/opt/homebrew/Cellar/zchat/27/libexec/bin/python" # zchat-python
         # constant list of args to pass to the command; the actual authentication
         # data is transmitted over stdin/stdout:
         args: ["/Users/h2oslabs/.config/ergo/ergo_auth_script.py"]

@@ -10,14 +10,25 @@ LAUNCH_DIR="$HOME/Library/LaunchAgents"
 
 echo "Deploying ergo-inside to $ERGO_DIR..."
 
+# Resolve zchat's Python path dynamically (avoids hardcoding Homebrew version)
+ZCHAT_PYTHON=""
+ZCHAT_PREFIX="$(brew --prefix zchat 2>/dev/null || true)"
+if [ -n "$ZCHAT_PREFIX" ] && [ -x "$ZCHAT_PREFIX/libexec/bin/python" ]; then
+    ZCHAT_PYTHON="$ZCHAT_PREFIX/libexec/bin/python"
+fi
+if [ -z "$ZCHAT_PYTHON" ]; then
+    echo "Warning: could not resolve zchat Homebrew Python, using system python3"
+    ZCHAT_PYTHON="$(which python3)"
+fi
+echo "Auth-script Python: $ZCHAT_PYTHON"
+
 # Ergo config + auth-script
-cp "$SCRIPT_DIR/ergo.yaml" "$ERGO_DIR/ergo.yaml"
+# Patch auth-script command with resolved Python path before copying
+sed "s|command:.*# zchat-python|command: \"$ZCHAT_PYTHON\" # zchat-python|" \
+    "$SCRIPT_DIR/ergo.yaml" > "$ERGO_DIR/ergo.yaml"
 cp "$SCRIPT_DIR/ergo_auth_script.py" "$ERGO_DIR/ergo_auth_script.py"
 cp "$SCRIPT_DIR/auth_script_config.json" "$ERGO_DIR/auth_script_config.json"
 chmod +x "$ERGO_DIR/ergo_auth_script.py"
-
-# Auth-script uses the zchat Homebrew venv Python (has httpx installed)
-# See ergo.yaml auth-script.command for the Python path
 
 # Caddy config
 cp "$SCRIPT_DIR/Caddyfile" "$CADDY_DIR/Caddyfile"
