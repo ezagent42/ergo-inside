@@ -891,9 +891,9 @@ datastore:
 
     # connection information for SQLite (currently only used for persistent history)
     sqlite:
-        enabled: false
+        enabled: true
         # path to the SQLite database file
-        database-path: "ergo_history.db"
+        database-path: "/Users/h2oslabs/.config/ergo/ergo_history.db"
         # timeout when waiting for write lock
         busy-timeout: 5s
         # maximum concurrent connections
@@ -1085,10 +1085,10 @@ history:
     # size limits above (`channel-length`, `client-length`, etc.); persistent
     # history has no limits other than those imposed by expire-time.
     persistent:
-        enabled: false
+        enabled: true
 
         # store unregistered channel messages in the persistent database?
-        unregistered-channels: false
+        unregistered-channels: true
 
         # for a registered channel, the channel owner can potentially customize
         # the history storage setting. as the server operator, your options are

@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Ergo auth-script: validate SASL PLAIN credentials against Keycloak userinfo.
+"""Ergo auth-script: validate SASL PLAIN credentials against OIDC userinfo.
 
 Protocol (stdin/stdout JSON):
   Input:  {"accountName": "alice", "passphrase": "<access_token>"}
   Output: {"success": true, "accountName": "alice"}
           or {"success": false, "error": "reason"}
 
-Config via env:
-  KEYCLOAK_USERINFO_URL — Keycloak userinfo endpoint
+Config: auth_script_config.json (userinfo_url pointing to Logto OIDC endpoint)
 """
 import json
 import os
@@ -26,7 +25,7 @@ def validate_credentials(
     userinfo_url: str,
     http_client: httpx.Client | None = None,
 ) -> dict:
-    """Validate a SASL credential pair against Keycloak.
+    """Validate a SASL credential pair against OIDC userinfo endpoint.
 
     Returns dict with 'success' bool and 'accountName' or 'error'.
     """
@@ -38,12 +37,12 @@ def validate_credentials(
             timeout=8.0,
         )
         if resp.status_code != 200:
-            return {"success": False, "error": f"Keycloak returned {resp.status_code}"}
+            return {"success": False, "error": f"OIDC provider returned {resp.status_code}"}
         userinfo = resp.json()
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-    # Logto uses "username", Keycloak uses "preferred_username"
+    # Logto uses "username", other OIDC providers may use "preferred_username"
     preferred_username = userinfo.get("username") or userinfo.get("preferred_username", "")
 
     # For agents (e.g., "alice-agent0"), check that the owner matches
@@ -67,8 +66,8 @@ def _read_config() -> str:
     if os.path.isfile(config_path):
         with open(config_path) as f:
             return json.load(f).get("userinfo_url", "")
-    # Fallback to env var
-    return os.environ.get("KEYCLOAK_USERINFO_URL", "")
+    # Fallback to env var (legacy name kept for backwards compatibility)
+    return os.environ.get("OIDC_USERINFO_URL", "") or os.environ.get("KEYCLOAK_USERINFO_URL", "")
 
 
 def main():
